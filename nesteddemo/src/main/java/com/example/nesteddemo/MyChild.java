@@ -17,8 +17,11 @@ import android.widget.LinearLayout;
 public class MyChild extends LinearLayout implements NestedScrollingChild {
     NestedScrollingChildHelper nscp;
     int lastY;
+
+    //这两个数组用来接收父容器传过来的参数
     int[] consumed;
     int[] offsetWindow;
+
     int showHeight;
 
     public MyChild(Context context) {
@@ -54,7 +57,9 @@ public class MyChild extends LinearLayout implements NestedScrollingChild {
                 int dy = y-lastY;
                 lastY = y;
 
+                //开启NestedScrolling机制，如果找到了匹配的父容器，那么就与父容器配合消费掉滑动距离
                 if(startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)){
+                    //dy是我们传过去的滑动的距离，父容器可以根据逻辑来选择要不要消费，消费多少
                     dispatchNestedPreScroll(0,dy,consumed,offsetWindow);
                     scrollBy(0,-dy);
                 }
@@ -68,6 +73,7 @@ public class MyChild extends LinearLayout implements NestedScrollingChild {
         return true;
     }
 
+    //scrollBy内部调用scrollTo,我们不能滑出去，也不能滑的太下面，我们要修正这些情况
     @Override
     public void scrollTo(@Px int x, @Px int y) {
         int maxY = getMeasuredHeight()-showHeight;
@@ -80,6 +86,8 @@ public class MyChild extends LinearLayout implements NestedScrollingChild {
         super.scrollTo(x, y);
     }
 
+    //这里使用单例模式提供Helper，我发现如果没有单例模式，机制就会失效
+    //原因我大致的猜到了，但是我还不能具体的表达出来，如果有人知道，请在评论区留下言
     private NestedScrollingChildHelper getNscp(){
         if(nscp == null){
             nscp = new NestedScrollingChildHelper(this);

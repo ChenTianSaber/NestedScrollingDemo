@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 /**
  * Created by chentian on 23/03/2017.
@@ -19,10 +18,8 @@ import android.widget.TextView;
 public class MyParent extends LinearLayout implements NestedScrollingParent {
     NestedScrollingParentHelper nsp;
     ImageView iv;
-    TextView tv;
     MyChild nsc;
     int ivHeight;
-    int tvHeight;
 
     public MyParent(Context context) {
         this(context,null);
@@ -34,19 +31,18 @@ public class MyParent extends LinearLayout implements NestedScrollingParent {
     }
 
     private void init() {
+        //创建一个Helper类
         nsp = new NestedScrollingParentHelper(this);
     }
 
     //拿到父容器里面的三个子View
-
-
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
         iv = (ImageView) getChildAt(0);
-        tv = (TextView) getChildAt(1);
         nsc = (MyChild) getChildAt(2);
 
+        //拿到ImageView的高度
         iv.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -56,18 +52,12 @@ public class MyParent extends LinearLayout implements NestedScrollingParent {
             }
         });
 
-        iv.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                if(tvHeight<=0){
-                    tvHeight = tv.getMeasuredHeight();
-                }
-            }
-        });
     }
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
+        //参数里target是实现了NestedScrolling机制的子元素，这个子元素可以不是父容器的直接子元素
+        //child是包含了target的View，这个View是父容器的直接子元素
         if(target instanceof MyChild){
             return true;
         }
@@ -76,23 +66,8 @@ public class MyParent extends LinearLayout implements NestedScrollingParent {
     }
 
     @Override
-    public void onNestedScrollAccepted(View child, View target, int nestedScrollAxes) {
-        nsp.onNestedScrollAccepted(child,target,nestedScrollAxes);
-    }
-
-    @Override
-    public void onStopNestedScroll(View target) {
-        nsp.onStopNestedScroll(target);
-    }
-
-    @Override
-    public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
-
-    }
-
-    @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        //dy是子View传过来的，来询问父容器是不是要消费他，要的话，就把dy放进consumed数组
+        //dy是子View传过来的，来询问父容器是不是要消费他，要的话，就把dy放进consumed数组,表示我消费了
         //其中consumed数组，consumed[0]表示x方向的距离，consumed[1]表示y方向的距离
         if(showImg(dy)||hideImg(dy)/*这里根据业务逻辑来判断*/){
             scrollBy(0,-dy);
@@ -134,6 +109,21 @@ public class MyParent extends LinearLayout implements NestedScrollingParent {
         }
 
         super.scrollTo(x,y);
+    }
+
+    @Override
+    public void onNestedScrollAccepted(View child, View target, int nestedScrollAxes) {
+        nsp.onNestedScrollAccepted(child,target,nestedScrollAxes);
+    }
+
+    @Override
+    public void onStopNestedScroll(View target) {
+        nsp.onStopNestedScroll(target);
+    }
+
+    @Override
+    public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
+
     }
 
     @Override
